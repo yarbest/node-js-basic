@@ -1,20 +1,18 @@
 import http from 'http';
+import UserModel from './user-model';
 
-const users = [
-  { id: 1, name: 'John' },
-  { id: 2, name: 'Jane' },
-]
-
-export const getUsers = (request: http.IncomingMessage, response: http.ServerResponse) => {
+export const getUsers = async (request: http.IncomingMessage, response: http.ServerResponse) => {
+  let users
   if(request.params.id) {
-    const user = users.find((user) => user.id === Number(request.params.id))
-    if(user) return response.send(user);
+    users = await UserModel.findById(request.params.id).catch(e => response.end('User not found'));
+  }else {
+    users = await UserModel.find() 
   }
+  
   response.send(users);
 }
 
-export const createUser = (request: http.IncomingMessage, response: http.ServerResponse) => {
-  const newUser = { id: users.length + 1, name: request.body.name }
-  users.push(newUser);
+export const createUser = async (request: http.IncomingMessage, response: http.ServerResponse) => {
+  const newUser = await UserModel.create({ name: request.body.name });
   response.send(newUser);
 }
